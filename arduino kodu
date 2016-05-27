@@ -1,0 +1,83 @@
+#define nempin A1
+#define pomp 3                //su pompası relay pini
+#define seviye 7       //su seviye sensoru pini
+#define vakum 4        //vakum anahtari relay pini
+#define kled 9         //kirmizi led pini
+#define sled 8         //sari led pini
+#define yled 6        //yesil led pini
+#define pot A0
+boolean seviyed;
+int inem;         //istenilen nem seviyesi
+int potd;
+float h;
+float hum;
+void olcum()
+{
+  potd = analogRead(pot);
+  hum = analogRead(nempin);
+
+  h = map(hum, 0, 1023, 0, 100);
+  seviyed = digitalRead(seviye);
+  delay(250);
+  Serial.print("Humidity: ");
+  Serial.print(h);
+  Serial.print("\t inem \t :");
+  Serial.println(inem);
+}
+void setup()
+{
+  Serial.begin(9600);
+  pinMode(pomp, OUTPUT);
+  pinMode(vakum, OUTPUT);
+  pinMode(kled, OUTPUT);
+  pinMode(sled, OUTPUT);
+  pinMode(yled, OUTPUT);
+  pinMode(seviye, INPUT);
+  digitalWrite(pomp, HIGH);
+  digitalWrite(vakum , HIGH);
+}
+
+void loop()
+{
+  inem = map(potd, 0, 1023, 0, 100);
+  olcum();
+  if (seviyed == LOW )
+  {
+    digitalWrite(yled, LOW);
+    digitalWrite(sled , LOW);
+    digitalWrite(pomp, HIGH);
+    digitalWrite(vakum , HIGH);
+    digitalWrite(kled, HIGH);
+    delay (100);
+    digitalWrite(kled, LOW);
+    delay (100);
+
+  }
+  else if (h <= inem)
+  {
+    int sayac = 0;
+    digitalWrite(pomp , LOW);
+    digitalWrite(vakum , LOW);
+    digitalWrite(kled , LOW);
+    digitalWrite(yled, LOW);
+    digitalWrite(sled , HIGH);
+    delay(1000);
+    while (100 >= sayac)
+    {
+      olcum();
+      sayac = sayac + 1;
+      delay(500);
+    }
+
+  }
+  else
+  {
+    digitalWrite(sled , LOW);
+    digitalWrite(pomp, HIGH);
+    digitalWrite(vakum , HIGH);
+    digitalWrite(yled, HIGH);
+    delay(100);
+    digitalWrite(yled, LOW);
+    delay(100);
+  }
+}
